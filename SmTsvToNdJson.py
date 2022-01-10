@@ -1,6 +1,16 @@
 #!/bin/env python3
-# note: if there is a '\ufeff' character, remove it from test file with vi using
-# ":set nobomb" command
+########################################################################
+# file:   SmTsvToNdJson.py
+# author: rbw
+# date:   Mon Jan 10 12:03:15 EST 2022
+# purpose:
+#   Convert Sysmon data file, in TSV format, to NDJSON for ingestion
+#   into Elasticsearch
+#
+# note:
+#         if the first byte of the input file is '\ufeff' character,
+#         remove it from file in vi using ":set nobomb" vi command
+########################################################################
 import sys
 import re
 import json
@@ -11,6 +21,7 @@ def main(tsv_file):
     # data is key-value pairs
     with open(tsv_file, 'r') as in_file:
         line_count = 0
+        seq_count = 0
         rec_dict_info_keys = []
         rec_dict = {} # hold all event record data
         for line in in_file:
@@ -29,6 +40,9 @@ def main(tsv_file):
                 # todo: handle cases where new record does NOT begin with "Information"
                 # look for tab-delimited lines??
                 if len(rec_dict) > 0:
+                    # output previous record
+                    seq_count += 1
+                    rec_dict['Sequence Count'] = seq_count
                     # print('rec_dict:')
                     print(json.dumps(rec_dict))
                     # break
